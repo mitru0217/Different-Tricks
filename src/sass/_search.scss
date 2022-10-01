@@ -1,0 +1,40 @@
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    border: 0;
+    padding: 0;
+    
+    white-space: nowrap;
+    clip-path: inset(100%);
+    clip: rect(0 0 0 0);
+    overflow: hidden;
+}
+.search-box {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100px;
+    background-color: rgb(40, 40, 131);
+    padding-top: 10px;
+    padding-bottom: 10px;
+    
+}
+.search-form {
+    display: flex;
+    align-items: center;
+}
+.search-input {
+    border: none;
+    width: 350px;
+    height: 40px;
+    font-size: 30px;
+}
+.search-button {
+    border: none;
+    width: 50px;
+    height: 40px;
+    cursor: pointer;
+    
+}
