@@ -4,7 +4,7 @@ export default class ImageApiService {
     this.page = 1;
   }
   fetchImages() {
-    const url = `https://pixabay.com/api/?key=30307966-ea2e6055e88053146b4d64f93&q=${this.searchQuery}&image_type=photo&orientation=horizontal&safesearch=true&page=${this.page}&per_page=5`;
+    const url = `https://pixabay.com/api/?key=30307966-ea2e6055e88053146b4d64f93&q=${this.searchQuery}&image_type=photo&orientation=horizontal&safesearch=true&page=${this.page}&per_page=20`;
     return fetch(url)
       .then(r => {
         if (!r.ok) {
@@ -14,7 +14,7 @@ export default class ImageApiService {
       })
       .then(data => {
         this.page += 1;
-        return data;
+        return data.hits;
       });
   }
 

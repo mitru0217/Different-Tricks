@@ -1,24 +1,9 @@
 // const axios = require('axios');
 // const BASE_URL = 'https://pixabay.com/api/';
-import ImageApiService from './image-service.js';
-import photos from './templates/photos.hbs';
+import ImageApiService from './api-service.js';
+import photoCards from './templates/photos.hbs';
 import { Notify } from 'notiflix/build/notiflix-notify-aio';
 import 'notiflix/dist/notiflix-3.2.5.min.css';
-
-// async function getImage() {
-//   try {
-//     const options = {
-//         headers: {
-//             Authorization: "30307966-ea2e6055e88053146b4d64f93"
-//         }
-
-//     }
-//     const response = await axios.get(`${BASE_URL}`,options );
-//     console.log(response);
-//   } catch (error) {
-//     console.error(error);
-//   }
-// }
 
 const searchForm = document.querySelector('.js-search-form');
 let photosContainer = document.querySelector('.js-photos-container');
@@ -35,30 +20,36 @@ function onSearch(e) {
   imageApiService.query = e.currentTarget.elements.query.value.trim();
 
   if (imageApiService.query === '') {
-    return;
+    return alert('Fill the field');
   }
 
   imageApiService.resetPage();
-  imageApiService.fetchImages().then(markup);
-  // .catch(error => {
-  //   if (parseInt(data.totalHits) === 0) {
-  //     Notify.info(
-  //       `Sorry, there are no images matching your search query. Please try again.`
-  //     );
-  //   }
-  // });
+
+  imageApiService
+    .fetchImages()
+    .then(hits => {
+      clearPhotosContainer();
+      appendPhotosMarkup(hits);
+    })
+    .catch(error => {
+      if (Array.length === 0) {
+        Notify.info(
+          `Sorry, there are no images matching your search query. Please try again.`
+        );
+      }
+    });
 }
 
 function onLoadMore() {
-  imageApiService.fetchImages().then(markup);
+  imageApiService.fetchImages().then(appendPhotosMarkup);
 }
 
-// function appendPhotosMarkup(data) {
-//   photosContainer.innerHTML = photos(data);
-// }
-// function clearPhotosContainer() {
-//   photosContainer.innerHTML = '';
-// }
+function appendPhotosMarkup(hits) {
+  photosContainer.insertAdjacentHTML('beforeend', photoCards(hits));
+}
+function clearPhotosContainer() {
+  photosContainer.innerHTML = '';
+}
 
 function markup({
   hits: [
@@ -66,24 +57,27 @@ function markup({
   ],
 }) {
   photosContainer.innerHTML = `<div class="photo-card">
-  <img src="${webformatURL}" alt="${tags}" loading="lazy" width="150" height="100" />
+  <img src="${webformatURL}" alt="${tags}" loading="lazy" class="img-item"/>
   <div class="info">
     <p class="info-item">
-      <b>Likes:${likes}</b>
+      <b>Likes:</b>
+      <span>${likes}</span>
     </p>
     <p class="info-item">
-      <b>Views:${views}</b>
+      <b>Views:</b>
+      <span>${views}</span>
     </p>
     <p class="info-item">
-      <b>Comments:${comments}</b>
+      <b>Comments:</b>
+      <span>${comments}</span>
     </p>
     <p class="info-item">
-      <b>Downloads:${downloads}</b>
+      <b>Downloads:</b>
+      <span>${downloads}</span>
     </p>
   </div>
 </div>
   `;
-  console.log(photosContainer.innerHTML);
 }
 
 // key - твой уникальный ключ доступа к API.
