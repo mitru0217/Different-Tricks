@@ -1,4 +1,5 @@
-// import ImageApiService from './api-service.js';
+
+
 import ImageApiService from './axiosApiService.js';
 import photoCards from './templates/photos.hbs';
 import { Notify } from 'notiflix/build/notiflix-notify-aio';
@@ -9,37 +10,29 @@ import 'simplelightbox/dist/simple-lightbox.min.css';
 const searchForm = document.querySelector('.js-search-form');
 let photosContainer = document.querySelector('.js-photos-container');
 const searchBtn = document.querySelector('.search-button');
-const toBtnTop = document.querySelector('.btn-to-top');
-const loading = document.querySelector('.pulse-container');
 const guard = document.querySelector('.js-guard');
-// window.addEventListener('scroll', onScroll);
-toBtnTop.addEventListener('click', onToTopBtn);
+const input = document.querySelector('.search-input');
+
+input.addEventListener('input', onInput);
 
 const imageApiService = new ImageApiService();
 
-const observeOptions = {
-  root: null,
-  rootMargin: '300px',
-  threshhold: 1,
-};
-
-function updateGallery(entries) {
-  entries.forEach(entry => {
-    if (entry.isIntersecting) {
-      imageApiService.fetchImages().then(hits => {
-        // lightbox.refresh();
-        photoCards(hits);
-        appendPhotosMarkup(hits);
-      });
-    }
-  });
+function onInput(e) {
+  e.preventDefault();
+  const inputValue = input.value;
+  if (inputValue === '') {
+    searchBtn.disabled = true;
+    clearPhotosContainer();
+    imageApiService.resetPage();
+    observer.unobserve(guard);
+    Notify.info('Please, fill the field');
+    return;
+  }
+  searchBtn.disabled = false;
 }
-const observer = new IntersectionObserver(updateGallery, observeOptions);
-
-// let simpleLightBox = null;
-// let totalPics = 0;
 
 searchForm.addEventListener('submit', onSearch);
+
 function onSearch(e) {
   e.preventDefault();
 
@@ -47,11 +40,9 @@ function onSearch(e) {
 
   if (imageApiService.query === '') {
     clearPhotosContainer();
-    return alert('Fill the field');
+    Notify.failure('Please, fill the field');
+    return;
   }
-  // searchBtn.disabled = false;
-  // observer.unobserve(loading);
-
   clearPhotosContainer();
 
   imageApiService.resetPage();
@@ -68,68 +59,53 @@ function onSearch(e) {
       Notify.info(`Hooray! We found ${totalHits} images.`);
     }
 
-    // const totalPages = Math.ceil(totalHits / imageApiService.perPage);
-    // if (imageApiService.page > totalPages) {
-    //   Notify.warning(
-    //     "We're sorry, but you've reached the end of search results."
-    //   );
-    // }
-    // smoothScroll();
-    console.log(hits);
+    const totalPages = Math.ceil(totalHits / imageApiService.perPage);
+    if (imageApiService.page > totalPages) {
+      Notify.warning(
+        "We're sorry, but you've reached the end of search results."
+      );
+    }
+    smoothScroll();
+  
   });
 }
 
+const observeOptions = {
+  root: null,
+  rootMargin: '300px',
+  threshhold: 1,
+};
+
+function updateGallery(entries) {
+  entries.forEach(entry => {
+    console.log(entries);
+
+    if (entry.isIntersecting) {
+      imageApiService.fetchImages().then(({ hits }) => {
+        appendPhotosMarkup(hits);
+      });
+    }
+  });
+}
+const observer = new IntersectionObserver(updateGallery, observeOptions);
+
 function appendPhotosMarkup(hits) {
-  // lightbox.refresh();
   photosContainer.insertAdjacentHTML('beforeend', photoCards(hits));
 
   let lightbox = new SimpleLightbox('.gallery a');
-  // lightbox.refresh('show.SimpleLightbox');
   // loading.classList.remove('show');
-  // observer.observe(loading);
 }
 
 function clearPhotosContainer() {
   photosContainer.innerHTML = '';
 }
+function smoothScroll() {
+  const { height: cardHeight } = document
+    .querySelector('.gallery')
+    .firstElementChild.getBoundingClientRect();
 
-// function showLoading() {
-//   loading.classList.add('show');
-
-//   setTimeout(loadMore, 1500);
-// }
-
-// function loadMore() {
-//   if (imageApiService.page > Math.ceil(totalPics / imageApiService.perPage)) {
-//     loading.classList.remove('show');
-//     return;
-//   }
-// }
-// function onScroll() {
-//   const scrolled = window.pageYOffset;
-//   const coords = document.documentElement.clientHeight;
-
-//   if (scrolled > coords) {
-//     toBtnTop.classList.add('btn-to-top--visible');
-//   }
-//   if (scrolled < coords) {
-//     toBtnTop.classList.remove('btn-to-top--visible');
-//   }
-// }
-
-function onToTopBtn() {
-  if (window.pageYOffset > 0) {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }
+  window.scrollBy({
+    // top: cardHeight * 1,
+    behavior: 'smooth',
+  });
 }
-
-// function smoothScroll() {
-//   const { height: cardHeight } = document
-//     .querySelector('.gallery')
-//     .firstElementChild.getBoundingClientRect();
-
-//   window.scrollBy({
-//     top: cardHeight * 2,
-//     behavior: 'smooth',
-//   });
-// }
