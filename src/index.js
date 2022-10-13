@@ -1,5 +1,3 @@
-
-
 import ImageApiService from './axiosApiService.js';
 import photoCards from './templates/photos.hbs';
 import { Notify } from 'notiflix/build/notiflix-notify-aio';
@@ -59,14 +57,13 @@ function onSearch(e) {
       Notify.info(`Hooray! We found ${totalHits} images.`);
     }
 
-    const totalPages = Math.ceil(totalHits / imageApiService.perPage);
-    if (imageApiService.page > totalPages) {
-      Notify.warning(
-        "We're sorry, but you've reached the end of search results."
-      );
-    }
+    // const totalPages = Math.ceil(totalHits / imageApiService.perPage);
+    // if (imageApiService.page === totalPages) {
+    //   Notify.warning(
+    //     "We're sorry, but you've reached the end of search results."
+    //   );
+    // }
     smoothScroll();
-  
   });
 }
 
@@ -81,8 +78,14 @@ function updateGallery(entries) {
     console.log(entries);
 
     if (entry.isIntersecting) {
-      imageApiService.fetchImages().then(({ hits }) => {
+      imageApiService.fetchImages().then(({ totalHits, hits }) => {
         appendPhotosMarkup(hits);
+        const totalPages = Math.ceil(totalHits / imageApiService.per_page);
+        if (imageApiService.page > totalPages) {
+          Notify.failure(
+            "We're sorry, but you've reached the end of search results."
+          );
+        }
       });
     }
   });
